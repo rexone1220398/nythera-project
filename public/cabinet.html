@@ -1,0 +1,2273 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Личный кабинет — NytheraClient</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
+
+    :root {
+      --panel: rgba(18, 18, 20, .78);
+      --panel-2: rgba(28, 28, 31, .82);
+      --text: #f7f7f8;
+      --muted: #aaaab1;
+      --line: rgba(255,255,255,.13);
+      --line-2: rgba(255,255,255,.25);
+      --shadow: 0 34px 100px rgba(0,0,0,.62);
+      --radius: 30px;
+      --bad: #ff7373;
+      --good: #ffffff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      min-height: 100vh;
+      font-family: Montserrat, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 50% -10%, rgba(255,255,255,.20), transparent 33%),
+        radial-gradient(circle at 88% 16%, rgba(120,120,130,.16), transparent 26%),
+        radial-gradient(circle at 10% 36%, rgba(255,255,255,.09), transparent 26%),
+        linear-gradient(145deg, #000, #030303 48%, #09090b 100%);
+      overflow-x: hidden;
+    }
+    body::before { content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .36; background: linear-gradient(to right, transparent, rgba(255,255,255,.035), transparent), repeating-linear-gradient(90deg, rgba(255,255,255,.025) 0 1px, transparent 1px 92px); mask-image: linear-gradient(to bottom, black, transparent 76%); }
+    body::after { content: ""; position: fixed; inset: -25%; pointer-events: none; background-image: radial-gradient(circle, rgba(255,255,255,.5) 0 1px, transparent 1.5px); background-size: 72px 72px; opacity: .045; transform: rotate(-8deg); }
+    a { color: inherit; text-decoration: none; }
+    button, input, select { font: inherit; }
+    .wrap { width: min(1240px, calc(100% - 36px)); margin: 0 auto; }
+
+    header { position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--line); background: rgba(0,0,0,.62); backdrop-filter: blur(22px); animation: navDrop .7s ease both; }
+    .nav { min-height: 78px; display: flex; align-items: center; justify-content: space-between; gap: 22px; }
+    .logo { display: flex; align-items: center; gap: 13px; font-size: 21px; font-weight: 900; letter-spacing: -.045em; }
+    .logo-mark { width: 46px; height: 46px; display: block; border-radius: 16px; object-fit: cover; box-shadow: 0 0 28px rgba(255,255,255,.38), inset 0 0 18px rgba(0,0,0,.42); }
+    .nav-links { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 14px; font-weight: 800; }
+
+    .btn { border: 0; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 13px 20px; border-radius: 999px; color: #050505; background: linear-gradient(135deg, #fff, #b7b8bf); font-weight: 950; box-shadow: 0 0 38px rgba(255,255,255,.18), 0 18px 46px rgba(0,0,0,.38); transition: transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease, filter .22s ease, border-color .22s ease; }
+    .btn:hover { transform: translateY(-4px) scale(1.025); filter: brightness(1.08); box-shadow: 0 0 60px rgba(255,255,255,.28), 0 25px 58px rgba(0,0,0,.5); }
+    .btn:active { transform: translateY(-1px) scale(.99); }
+    .btn.ghost { color: var(--text); background: rgba(255,255,255,.06); border: 1px solid var(--line-2); box-shadow: none; }
+    .btn.small { min-height: 38px; padding: 9px 14px; font-size: 13px; }
+    .btn:disabled { opacity: .65; cursor: wait; transform: none; }
+
+    main { padding: 74px 0 96px; }
+    .cabinet-hero { display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: end; margin-bottom: 28px; animation: heroFade .8s ease both; }
+    .badge { display: inline-flex; align-items: center; gap: 10px; padding: 9px 14px; margin-bottom: 18px; border-radius: 999px; border: 1px solid var(--line-2); background: rgba(255,255,255,.055); color: #e7e7ea; font-size: 14px; font-weight: 900; box-shadow: inset 0 1px 0 rgba(255,255,255,.1); }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: #fff; box-shadow: 0 0 20px rgba(255,255,255,.95), 0 0 38px rgba(255,255,255,.35); }
+    h1 { font-size: clamp(42px, 7vw, 84px); line-height: .92; letter-spacing: -.06em; font-weight: 900; }
+    .lead { max-width: 720px; margin-top: 18px; color: var(--muted); font-size: 17px; line-height: 1.7; }
+
+    .grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 22px; align-items: start; }
+    .card { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); box-shadow: var(--shadow); padding: 28px; backdrop-filter: blur(20px); animation: cardIn .65s cubic-bezier(.2,.8,.2,1) both; transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease; }
+    .card:hover { transform: translateY(-5px); border-color: var(--line-2); box-shadow: 0 42px 110px rgba(0,0,0,.68); }
+    .card:nth-child(2) { animation-delay: .08s; }
+    .card h2 { font-size: 30px; letter-spacing: -.04em; margin-bottom: 18px; }
+    .profile-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .info { min-height: 104px; padding: 18px; border: 1px solid var(--line); border-radius: 22px; background: linear-gradient(180deg, rgba(255,255,255,.085), rgba(255,255,255,.035)); transition: transform .22s ease, background .22s ease, border-color .22s ease; }
+    .info:hover { transform: translateY(-4px) scale(1.015); border-color: var(--line-2); background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.04)); }
+    .info small { display: block; color: var(--muted); font-weight: 800; margin-bottom: 10px; }
+    .info strong { display: block; font-size: 24px; word-break: break-word; }
+    .info.wide { grid-column: 1 / -1; }
+    .role-admin { color: #fff; text-shadow: 0 0 18px rgba(255,255,255,.65); }
+
+    form { display: grid; gap: 16px; }
+    label { display: grid; gap: 8px; color: #e8e8eb; font-size: 14px; font-weight: 900; }
+    .check-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 15px 16px; border: 1px solid rgba(255,255,255,.12); border-radius: 18px; background: rgba(0,0,0,.28); color: #e8e8eb; font-size: 14px; font-weight: 900; transition: border-color .2s ease, background .2s ease, transform .2s ease; }
+    .check-row:hover { transform: translateY(-1px); border-color: rgba(255,255,255,.24); background: rgba(255,255,255,.055); }
+    .check-row input { width: 22px; height: 22px; accent-color: #fff; transform: none; box-shadow: none; }
+    .check-row input:hover { transform: none; }
+    input, select { width: 100%; outline: none; color: var(--text); background: rgba(0,0,0,.32); border: 1px solid rgba(255,255,255,.12); border-radius: 16px; padding: 15px 16px; transition: border-color .2s ease, box-shadow .2s ease, background .2s ease, transform .2s ease; }
+    select option { background: #111; color: #fff; }
+    input:hover, select:hover { transform: translateY(-1px); border-color: rgba(255,255,255,.24); }
+    input:focus, select:focus { border-color: rgba(255,255,255,.48); box-shadow: 0 0 0 4px rgba(255,255,255,.09); background: rgba(0,0,0,.42); }
+    .message { display: none; padding: 13px 14px; border-radius: 16px; border: 1px solid rgba(255,255,255,.24); background: rgba(255,255,255,.075); color: #f4f4f6; font-weight: 850; line-height: 1.45; animation: messagePop .38s cubic-bezier(.2,.8,.2,1) both; }
+    .message.error { border-color: rgba(255,115,115,.45); background: rgba(255,115,115,.12); }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+    .pricing-section { margin-top: 22px; padding: 28px; border: 1px solid var(--line); border-radius: 34px; background: radial-gradient(circle at 82% 0%, rgba(255,255,255,.12), transparent 34%), linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.032)); box-shadow: 0 18px 56px rgba(0,0,0,.24); animation: cardIn .65s cubic-bezier(.2,.8,.2,1) both; }
+    .pricing-head { display: flex; align-items: end; justify-content: space-between; gap: 18px; margin-bottom: 18px; }
+    .pricing-head h2 { font-size: 30px; letter-spacing: -.04em; margin-bottom: 0; }
+    .pricing-head p { color: var(--muted); line-height: 1.55; max-width: 540px; font-weight: 650; }
+    .pricing-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+    .pricing-card { position: relative; overflow: hidden; min-height: 142px; padding: 22px; border: 1px solid rgba(255,255,255,.14); border-radius: 24px; background: rgba(255,255,255,.045); transition: transform .25s ease, border-color .25s ease, background .25s ease, box-shadow .25s ease; }
+    .pricing-card::after { content: ""; position: absolute; inset: auto -30% -45% auto; width: 120px; height: 120px; border-radius: 50%; background: rgba(255,255,255,.12); filter: blur(24px); transition: transform .25s ease, opacity .25s ease; opacity: .55; }
+    .pricing-card:hover { transform: translateY(-7px) scale(1.015); border-color: rgba(255,255,255,.32); background: rgba(255,255,255,.07); box-shadow: 0 24px 60px rgba(0,0,0,.34), 0 0 36px rgba(255,255,255,.07); }
+    .pricing-card:hover::after { transform: scale(1.25); opacity: .85; }
+    .pricing-card strong { display: block; font-size: 15px; color: #e9e9ec; margin-bottom: 10px; }
+    .pricing-card b { display: block; font-size: clamp(30px, 4vw, 42px); letter-spacing: -.06em; }
+    .pricing-card span { display: block; margin-top: 8px; color: var(--muted); font-size: 13px; font-weight: 800; }
+    .pricing-card .buy-link { position: relative; z-index: 2; margin-top: 16px; width: 100%; min-height: 42px; padding: 10px 14px; font-size: 13px; box-shadow: none; }
+    .pricing-card.featured { border-color: rgba(255,255,255,.32); background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.05)); }
+
+    .media-panel { margin-top: 22px; display: none; }
+    .toolbar { display: flex; gap: 12px; flex-wrap: wrap; margin: 0 0 16px; } .toolbar input, .toolbar select { min-width: 180px; flex: 1; } .danger-text { color: var(--bad); font-weight: 900; } .ok-text { color: var(--good); font-weight: 900; }
+    .admin-panel { margin-top: 22px; display: none; }
+    .admin-grid { display: grid; grid-template-columns: .78fr 1.22fr; gap: 22px; align-items: start; }
+    .generated-key { display: none; margin-top: 14px; padding: 16px; border: 1px solid var(--line-2); border-radius: 18px; background: rgba(255,255,255,.08); font-weight: 900; word-break: break-all; animation: messagePop .38s ease both; }
+    .admin-divider { height: 1px; margin: 24px 0; background: rgba(255,255,255,.12); }
+    .file-hint { color: var(--muted); font-size: 13px; line-height: 1.6; margin-top: -6px; }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 20px; }
+    table { width: 100%; border-collapse: collapse; min-width: 720px; }
+    th, td { padding: 13px 14px; border-bottom: 1px solid rgba(255,255,255,.09); text-align: left; font-size: 13px; vertical-align: top; }
+    th { color: #f1f1f3; background: rgba(255,255,255,.06); font-weight: 900; }
+    td { color: var(--muted); font-weight: 700; }
+    tr:last-child td { border-bottom: 0; }
+    .status-used { color: #fff; }
+    .status-new { color: #d7d7dc; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+    .loading { min-height: 50vh; display: grid; place-items: center; color: var(--muted); font-weight: 900; }
+    .hidden { display: none !important; }
+
+    @keyframes navDrop { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes heroFade { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes cardIn { from { opacity: 0; transform: translateY(30px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes messagePop { from { opacity: 0; transform: translateY(-8px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+    @media (max-width: 980px) { .cabinet-hero, .grid, .admin-grid { grid-template-columns: 1fr; } .profile-grid { grid-template-columns: 1fr; } .pricing-grid { grid-template-columns: repeat(2, 1fr); } .pricing-head { align-items: flex-start; flex-direction: column; } }
+    @media (max-width: 680px) { .nav { align-items: flex-start; flex-direction: column; padding: 16px 0; } .nav-links { width: 100%; justify-content: space-between; } main { padding-top: 46px; } .pricing-grid { grid-template-columns: 1fr; } }
+  
+/* ===== Nythera mobile/performance optimization patch ===== */
+img, video, canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+.pricing-section {
+  overflow: hidden;
+}
+
+.pricing-grid {
+  align-items: stretch;
+}
+
+.pricing-card,
+.feature,
+.card,
+.download-card,
+.stat,
+.info {
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.gui-image,
+.logo-mark,
+.letter-n {
+  image-rendering: auto;
+}
+
+@media (max-width: 1180px) {
+  .pricing-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 820px) {
+  body {
+    background:
+      radial-gradient(circle at 50% -12%, rgba(255,255,255,.12), transparent 30%),
+      linear-gradient(145deg, #000, #050506 58%, #09090b 100%) !important;
+  }
+
+  body::before,
+  body::after,
+  .halo,
+  .gui-frame::before {
+    display: none !important;
+  }
+
+  header,
+  .auth-card,
+  .card {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .pricing-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  .pricing-section {
+    padding: 20px !important;
+    border-radius: 26px !important;
+  }
+
+  .pricing-card {
+    min-height: 132px !important;
+    padding: 18px !important;
+  }
+
+  .pricing-card b {
+    font-size: 34px !important;
+  }
+
+  .pricing-card .buy-link {
+    min-height: 40px !important;
+    font-size: 12px !important;
+    padding: 10px 12px !important;
+  }
+
+  .hero {
+    padding: 42px 0 46px !important;
+  }
+
+  section {
+    padding: 46px 0 !important;
+  }
+
+  .showcase {
+    min-height: auto !important;
+    padding-top: 28px !important;
+  }
+
+  .gui-frame {
+    width: 100% !important;
+    margin-left: 0 !important;
+    transform: none !important;
+    animation: none !important;
+    filter: drop-shadow(0 20px 40px rgba(0,0,0,.55)) !important;
+  }
+
+  .letter-n {
+    display: none !important;
+  }
+
+  .features {
+    gap: 14px !important;
+  }
+
+  .feature,
+  .card,
+  .download-card,
+  .pricing-card,
+  .stat,
+  .info {
+    box-shadow: 0 12px 34px rgba(0,0,0,.28) !important;
+    transition: transform .18s ease, border-color .18s ease, background .18s ease !important;
+  }
+
+  .feature:hover,
+  .card:hover,
+  .download-card:hover,
+  .pricing-card:hover,
+  .stat:hover,
+  .info:hover,
+  .btn:hover {
+    transform: translateY(-2px) !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .wrap {
+    width: min(100% - 24px, 1240px) !important;
+  }
+
+  .pricing-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .pricing-head {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+  }
+
+  .pricing-card {
+    min-height: 118px !important;
+  }
+
+  .pricing-card b {
+    font-size: 32px !important;
+  }
+
+  .hero-actions,
+  .actions {
+    flex-direction: column !important;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
+  .nav-links {
+    flex-wrap: wrap;
+  }
+
+  .profile-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  table {
+    min-width: 640px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce), (max-width: 820px) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+  
+/* ===== Nythera desktop/mobile scroll stability patch v41 ===== */
+/* Убирает белый экран при быстром скролле: самые тяжелые fixed/blur/filter слои отключены везде, не только на телефонах. */
+
+html,
+body {
+  background-color: #030303 !important;
+  background-attachment: scroll !important;
+}
+
+body::before,
+body::after {
+  content: none !important;
+  display: none !important;
+}
+
+header {
+  background: rgba(0,0,0,.86) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.halo,
+.gui-frame::before {
+  display: none !important;
+}
+
+.gui-frame {
+  animation: none !important;
+  transform: none !important;
+  filter: none !important;
+  will-change: auto !important;
+}
+
+.letter-n {
+  animation: none !important;
+  filter: none !important;
+  opacity: .72 !important;
+  will-change: auto !important;
+}
+
+.card,
+.auth-card,
+.pricing-section,
+.feature,
+.download-card,
+.info,
+.stat {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  will-change: auto !important;
+}
+
+.card,
+.download-card {
+  box-shadow: 0 24px 70px rgba(0,0,0,.48) !important;
+}
+
+.feature,
+.pricing-card,
+.info,
+.stat {
+  box-shadow: 0 12px 34px rgba(0,0,0,.26) !important;
+}
+
+.btn {
+  box-shadow: 0 12px 32px rgba(0,0,0,.34), 0 0 24px rgba(255,255,255,.10) !important;
+}
+
+.btn:hover {
+  box-shadow: 0 16px 38px rgba(0,0,0,.42), 0 0 28px rgba(255,255,255,.16) !important;
+}
+
+.pricing-card::after {
+  display: none !important;
+}
+
+section,
+.card,
+.pricing-section,
+.download-card {
+  contain: layout paint;
+}
+
+@media (min-width: 821px) {
+  .reveal {
+    transition: opacity .35s ease, transform .35s ease !important;
+  }
+
+  .feature:hover,
+  .card:hover,
+  .download-card:hover,
+  .pricing-card:hover,
+  .stat:hover,
+  .info:hover {
+    transform: translateY(-3px) !important;
+  }
+}
+
+@media (max-width: 820px) {
+  .letter-n {
+    display: none !important;
+  }
+
+  .card,
+  .download-card,
+  .feature,
+  .pricing-card,
+  .info,
+  .stat {
+    box-shadow: 0 10px 26px rgba(0,0,0,.22) !important;
+  }
+}
+
+  
+
+/* ===== Nythera mobile usability patch v43 ===== */
+html { -webkit-text-size-adjust: 100%; }
+body { width: 100%; }
+img, svg, video { max-width: 100%; height: auto; }
+
+@media (max-width: 760px) {
+  .wrap { width: min(100% - 24px, 1240px) !important; }
+  header { top: 0; }
+  .nav {
+    min-height: auto !important;
+    align-items: flex-start !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    padding: 14px 0 !important;
+  }
+  .logo { font-size: 18px !important; letter-spacing: -.035em !important; }
+  .logo-mark { width: 40px !important; height: 40px !important; border-radius: 14px !important; }
+  .nav-links {
+    width: 100% !important;
+    justify-content: flex-start !important;
+    gap: 8px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding: 0 0 4px !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .nav-links::-webkit-scrollbar { display: none; }
+  .nav-links a,
+  .nav-links button {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+    min-height: 38px !important;
+    padding: 10px 12px !important;
+    border-radius: 999px !important;
+    background: rgba(255,255,255,.07) !important;
+    border: 1px solid rgba(255,255,255,.14) !important;
+  }
+  h1 { font-size: clamp(36px, 12vw, 58px) !important; line-height: .98 !important; }
+  h2 { font-size: clamp(24px, 7vw, 32px) !important; }
+  .lead { max-width: 100% !important; font-size: 15px !important; }
+  .hero, main { overflow: hidden; }
+  .hero-grid,
+  .cabinet-hero,
+  .grid,
+  .admin-grid,
+  .download-card,
+  .features,
+  .stats,
+  .status-grid,
+  .profile-grid,
+  .pricing-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .card,
+  .pricing-section,
+  .download-card {
+    padding: 20px !important;
+    border-radius: 24px !important;
+  }
+  .actions,
+  .hero-actions,
+  .toolbar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .actions .btn,
+  .hero-actions .btn,
+  .toolbar .btn,
+  form .btn {
+    width: 100% !important;
+  }
+  input,
+  select,
+  button,
+  .btn {
+    min-height: 44px;
+  }
+  .table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  table { min-width: 760px !important; }
+  th, td { padding: 11px 12px !important; font-size: 12px !important; }
+  [style*="grid-column"] { grid-column: auto !important; }
+}
+
+@media (max-width: 430px) {
+  .wrap { width: min(100% - 18px, 1240px) !important; }
+  .card,
+  .pricing-section,
+  .download-card { padding: 16px !important; border-radius: 20px !important; }
+  .nav-links a,
+  .nav-links button { font-size: 12px !important; padding: 9px 10px !important; }
+  .info strong { font-size: 20px !important; }
+  table { min-width: 700px !important; }
+}
+
+
+/* ===== Nythera admin panel table/layout fix v44 ===== */
+.admin-panel,
+.admin-grid,
+.grid,
+.card,
+.table-wrap {
+  max-width: 100%;
+}
+
+.grid > .card,
+.admin-grid > .card,
+.admin-panel .card,
+.table-wrap {
+  min-width: 0;
+}
+
+.admin-grid {
+  grid-template-columns: minmax(320px, .78fr) minmax(0, 1.22fr) !important;
+}
+
+.table-wrap {
+  display: block;
+  width: 100%;
+  overflow-x: auto !important;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-color: rgba(255,255,255,.28) rgba(255,255,255,.06);
+}
+
+.table-wrap table {
+  width: max-content;
+  min-width: 100%;
+}
+
+.table-wrap th,
+.table-wrap td {
+  max-width: 260px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.table-wrap .mono {
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+
+.collapsible-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.collapsible-head h2 {
+  margin: 0;
+}
+
+.collapsible-toggle {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.collapsible-toggle::before {
+  content: "▾";
+  display: inline-block;
+  transform: rotate(-90deg);
+  transition: transform .2s ease;
+}
+
+.collapsible-toggle[aria-expanded="true"]::before {
+  transform: rotate(0deg);
+}
+
+.admin-section .collapsible-body,
+.card > .collapsible-body {
+  padding-top: 4px;
+}
+
+.admin-subsection h2 {
+  margin-bottom: 14px;
+}
+
+.collapsible-body[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 980px) {
+  .admin-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 760px) {
+  main {
+    overflow-x: hidden;
+    overflow-y: visible;
+  }
+
+  .table-wrap {
+    border-radius: 16px !important;
+  }
+
+  .table-wrap table {
+    min-width: 860px !important;
+  }
+}
+
+
+/* ===== Nythera best offer pricing patch v45 ===== */
+/* Карточка 1 месяц выделена, но остается в общем ряду без поднятия. */
+.pricing-card.best-month {
+  z-index: 3;
+  overflow: visible;
+  border-color: rgba(255,255,255,.48) !important;
+  background:
+    radial-gradient(circle at 50% -18%, rgba(255,255,255,.32), transparent 48%),
+    linear-gradient(180deg, rgba(255,255,255,.19), rgba(255,255,255,.065)) !important;
+  box-shadow:
+    0 28px 80px rgba(0,0,0,.48),
+    0 0 46px rgba(255,255,255,.18) !important;
+  transform: none !important;
+}
+
+.pricing-card.best-month:hover {
+  transform: translateY(-3px) !important;
+  border-color: rgba(255,255,255,.68) !important;
+  background:
+    radial-gradient(circle at 50% -18%, rgba(255,255,255,.38), transparent 50%),
+    linear-gradient(180deg, rgba(255,255,255,.24), rgba(255,255,255,.075)) !important;
+  box-shadow:
+    0 34px 96px rgba(0,0,0,.56),
+    0 0 58px rgba(255,255,255,.24) !important;
+}
+
+.pricing-card.best-month::before {
+  content: "Рекомендуем";
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 4;
+  padding: 7px 10px;
+  border-radius: 999px;
+  color: #050505;
+  background: linear-gradient(135deg, #fff, #c9cbd2);
+  font-size: 11px;
+  font-weight: 950;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  box-shadow: 0 10px 26px rgba(0,0,0,.36), 0 0 24px rgba(255,255,255,.2);
+}
+
+.pricing-card.best-month strong {
+  padding-right: 108px;
+}
+
+.pricing-card.best-month b {
+  font-size: clamp(36px, 4.4vw, 50px);
+}
+
+.pricing-card.best-month .buy-link {
+  box-shadow: 0 14px 30px rgba(0,0,0,.38), 0 0 24px rgba(255,255,255,.14) !important;
+}
+
+.best-label {
+  position: relative;
+  z-index: 2;
+  margin-top: 13px;
+  padding: 10px 12px 0;
+  border-top: 1px solid rgba(255,255,255,.22);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 950;
+  text-align: center;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  text-shadow: 0 0 18px rgba(255,255,255,.34);
+}
+
+.pricing-card.best-month + .pricing-card,
+.pricing-card.best-month ~ .pricing-card {
+  opacity: .9;
+}
+
+@media (max-width: 1180px) {
+  .pricing-card.best-month {
+    transform: none !important;
+  }
+}
+
+@media (max-width: 820px) {
+  .pricing-card.best-month {
+    transform: none !important;
+    box-shadow: 0 16px 42px rgba(0,0,0,.32), 0 0 28px rgba(255,255,255,.14) !important;
+  }
+
+  .pricing-card.best-month:hover {
+    transform: translateY(-2px) !important;
+  }
+
+  .pricing-card.best-month strong {
+    padding-right: 100px;
+  }
+}
+
+@media (max-width: 430px) {
+  .pricing-card.best-month::before {
+    position: static;
+    display: inline-flex;
+    margin-bottom: 10px;
+  }
+
+  .pricing-card.best-month strong {
+    padding-right: 0;
+  }
+}
+
+/* ===== Nythera admin UX/performance patch v45 ===== */
+.admin-quick-note {
+  margin: -6px 0 18px;
+  padding: 15px 18px;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255,255,255,.085), rgba(255,255,255,.035));
+  color: var(--muted);
+  font-weight: 750;
+  line-height: 1.55;
+}
+
+.admin-quick-note strong {
+  color: var(--text);
+  font-weight: 950;
+}
+
+.admin-panel .admin-section {
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 22px;
+  background: rgba(255,255,255,.025);
+}
+
+.admin-panel .admin-divider {
+  margin: 16px 0;
+}
+
+.admin-panel .collapsible-head {
+  margin-bottom: 0;
+}
+
+.admin-panel .collapsible-body:not([hidden]) {
+  margin-top: 14px;
+}
+
+.admin-panel .collapsible-toggle {
+  min-width: 116px;
+}
+
+.admin-panel .toolbar {
+  position: sticky;
+  top: 92px;
+  z-index: 6;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 18px;
+  background: rgba(10,10,12,.94);
+}
+
+.admin-panel td:last-child {
+  min-width: 210px;
+}
+
+.admin-panel td:last-child .btn.small {
+  margin: 3px 3px 3px 0;
+}
+
+.admin-panel .generated-key {
+  user-select: all;
+}
+
+.admin-panel .table-wrap {
+  background: rgba(0,0,0,.16);
+}
+
+@media (max-width: 760px) {
+  .admin-quick-note {
+    margin-top: 0;
+    padding: 13px 14px;
+    border-radius: 18px;
+  }
+
+  .admin-panel .admin-section {
+    padding: 12px;
+    border-radius: 18px;
+  }
+
+  .admin-panel .collapsible-head {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-panel .collapsible-toggle {
+    width: 100%;
+  }
+
+  .admin-panel .toolbar {
+    position: static;
+  }
+}
+
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap nav">
+      <a class="logo" href="/"><img class="logo-mark" src="/assets/logo.png" alt="NytheraClient"><span>NytheraClient</span></a>
+      <div class="nav-links"><a class="btn ghost small" href="/">На сайт</a><a class="btn ghost small" href="/how-to-buy">Как купить</a><a class="btn ghost small" href="/faq">FAQ</a><a class="btn ghost small" href="/rules">Правила</a><a class="btn ghost small" href="https://t.me/NytheraClient" target="_blank" rel="noopener">Наш телеграм</a><button class="btn ghost small" type="button" id="logoutBtn">Выйти</button></div>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap loading" id="loading">Загрузка кабинета...</div>
+    <div class="wrap hidden" id="cabinet">
+      <section class="cabinet-hero">
+        <div>
+          <div class="badge"><span class="dot"></span>Личный кабинет</div>
+          <h1 id="profileTitle">Профиль</h1>
+          <p class="lead" id="welcomeText">Ваш аккаунт готов к использованию.</p>
+        </div>
+        <button class="btn" id="heroDownloadLoaderBtn" type="button">Скачать лоадер</button>
+      </section>
+
+      <section class="grid">
+        <div class="card">
+          <h2>Данные аккаунта</h2>
+          <div class="profile-grid">
+            <div class="info"><small>UID</small><strong id="uid">—</strong></div>
+            <div class="info"><small>Роль</small><strong id="role">—</strong></div>
+            <div class="info"><small>Никнейм</small><strong id="nickname">—</strong></div>
+            <div class="info"><small>Подписка до</small><strong id="subscriptionUntil">—</strong></div>
+            <div class="info wide"><small>Email</small><strong id="email">—</strong></div>
+            <div class="info wide"><small>HWID</small><strong id="hwid">—</strong></div>
+            <div class="info wide"><small>Дата регистрации</small><strong id="createdAt">—</strong></div>
+          </div>
+          <div class="actions" id="download"><button class="btn" id="downloadLoaderBtn" type="button">Скачать лоадер</button><a class="btn ghost" href="/">Вернуться на сайт</a></div><div class="message" id="downloadMessage"></div>
+        </div>
+
+        <div class="card">
+          <h2>Активация ключа</h2>
+          <div class="message" id="keyMessage"></div>
+          <form id="activateKeyForm">
+            <label>Ключ<input name="code" placeholder="Nythera-XXXXXXXXXXXX-XX" required /></label>
+            <button class="btn" type="submit" id="activateKeyBtn">Активировать ключ</button>
+          </form>
+          <p class="file-hint" style="margin-top:12px;">В этом поле можно активировать ключ подписки.</p>
+          <div style="height:22px"></div>
+          <h2>Смена пароля</h2>
+          <div class="message" id="passwordMessage"></div>
+          <form id="passwordForm">
+            <label>Старый пароль<input name="oldPassword" type="password" placeholder="••••••••" minlength="6" required /></label>
+            <label>Новый пароль<input name="newPassword" type="password" placeholder="••••••••" minlength="6" required /></label>
+            <button class="btn" type="submit" id="changePasswordBtn">Изменить пароль</button>
+          </form>
+        </div>
+      </section>
+
+      <section class="grid" style="margin-top:22px;">
+        <div class="card">
+          <h2>Мои активации</h2>
+          <p class="file-hint" style="margin-bottom:14px;">Здесь видны ключи, которые были активированы на вашем аккаунте.</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Ключ</th><th>Срок</th><th>Дата</th><th>Подписка до</th></tr></thead>
+              <tbody id="myActivationsTable"><tr><td colspan="4">Загрузка...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Статус сервиса</h2>
+          <p class="file-hint" style="margin-bottom:14px;">Актуальные версии клиента и лоадера, состояние авторизации и хранилища.</p>
+          <div class="profile-grid">
+            <div class="info"><small>API</small><strong id="statusApi">—</strong></div>
+            <div class="info"><small>Вход через лоадер</small><strong id="statusLoaderLogin">—</strong></div>
+            <div class="info"><small>Версия loader</small><strong id="statusLoaderVersion">—</strong></div>
+            <div class="info"><small>Версия client</small><strong id="statusClientVersion">—</strong></div>
+          </div>
+        </div>
+      </section>
+
+
+      <section class="pricing-section">
+        <div class="pricing-head">
+          <h2>Цены на подписку</h2>
+          <p>Выбери срок, оплати через FunPay и активируй полученный ключ в поле выше.</p>
+        </div>
+        <div class="pricing-grid">
+            <article class="pricing-card"><strong>3 дня</strong><b>39₽</b><span>Мини-доступ</span><a class="btn buy-link" href="https://funpay.com/lots/offer?id=68134491" target="_blank" rel="noopener">Купить на FunPay</a></article>
+            <article class="pricing-card"><strong>7 дней</strong><b>59₽</b><span>Быстрый доступ</span><a class="btn buy-link" href="https://funpay.com/lots/offer?id=68134800" target="_blank" rel="noopener">Купить на FunPay</a></article>
+            <article class="pricing-card featured best-month"><strong>1 месяц</strong><b>129₽</b><span>Оптимальный старт</span><a class="btn buy-link" href="https://funpay.com/lots/offer?id=68135147" target="_blank" rel="noopener">Купить на FunPay</a><div class="best-label">Лучшее предложение</div></article>
+            <article class="pricing-card"><strong>1 год</strong><b>399₽</b><span>Долгий доступ</span><a class="btn buy-link" href="https://funpay.com/lots/offer?id=68135348" target="_blank" rel="noopener">Купить на FunPay</a></article>
+            <article class="pricing-card"><strong>Навсегда</strong><b>699₽</b><span>Максимальная выгода</span><a class="btn buy-link" href="https://funpay.com/lots/offer?id=68135721" target="_blank" rel="noopener">Купить на FunPay</a></article>
+          </div>
+      </section>
+
+      <section class="media-panel" id="mediaPanel">
+        <div class="card">
+          <div class="badge"><span class="dot"></span>Media</div>
+          <h2>Media-генератор ключей</h2>
+          <div class="message" id="mediaMessage"></div>
+          <div class="actions">
+            <button class="btn" type="button" data-media-duration="3d">Запросить ключ на 3 дня</button>
+            <button class="btn ghost" type="button" data-media-duration="7d">Запросить ключ на 7 дней</button>
+          </div>
+          <p class="file-hint" style="margin-top:14px;">
+            ⚠️ Генерируя ключи, вы подтверждаете, что не будете их продавать или передавать для перепродажи.
+            Наказание за нарушение: бан аккаунта и снятие подписки.
+            Ключ появится здесь только после подтверждения администратором.
+          </p>
+
+          <div class="admin-divider"></div>
+
+          <h2>Мои подтвержденные ключи</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Ключ</th>
+                  <th>Статус</th>
+                </tr>
+              </thead>
+              <tbody id="mediaKeysTable">
+                <tr><td colspan="2">Ключей пока нет</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="admin-panel" id="adminPanel">
+        <div class="admin-quick-note"><strong>Админка разгружена:</strong> тяжелые таблицы и журналы теперь загружаются только при раскрытии нужного раздела, поэтому личный кабинет открывается быстрее.</div>
+        <div class="admin-grid">
+          <div class="card">
+            <div class="badge"><span class="dot"></span>Admin Panel</div>
+
+            <div class="admin-section">
+              <div class="collapsible-head">
+                <h2>Экстренное отключение входа</h2>
+                <button class="btn small ghost collapsible-toggle" type="button" data-collapsible-toggle aria-expanded="false" aria-controls="adminLoginSettingsBody">Развернуть</button>
+              </div>
+              <div class="collapsible-body" id="adminLoginSettingsBody" hidden>
+                <div class="message" id="loginSettingsMessage"></div>
+                <form id="loginSettingsForm">
+                  <label class="check-row"><span>Вход через сайт</span><input id="siteLoginEnabledToggle" name="siteLoginEnabled" type="checkbox" /></label>
+                  <label class="check-row"><span>Вход через лоадер</span><input id="loaderLoginEnabledToggle" name="loaderLoginEnabled" type="checkbox" /></label>
+                  <label>Минимальная версия лоадера<input id="minLoaderVersionInput" name="minLoaderVersion" placeholder="Например 1.0.5, можно оставить пустым" /></label>
+                  <p class="file-hint">Если защита под угрозой, отключи вход. Пользователям будет показано: “Вход временно отключен, извините за неудобства”. Уже вошедший админ сможет включить вход обратно.</p>
+                  <button class="btn" type="submit" id="saveLoginSettingsBtn">Сохранить настройки входа</button>
+                </form>
+              </div>
+            </div>
+
+            <div class="admin-divider"></div>
+
+            <div class="admin-section">
+              <div class="collapsible-head">
+                <h2>Генерация ключей</h2>
+                <button class="btn small ghost collapsible-toggle" type="button" data-collapsible-toggle aria-expanded="false" aria-controls="adminGenerateKeysBody">Развернуть</button>
+              </div>
+              <div class="collapsible-body" id="adminGenerateKeysBody" hidden>
+                <div class="message" id="adminMessage"></div>
+                <form id="generateKeyForm">
+                  <label>Срок подписки
+                    <select name="duration" required>
+                      <option value="1d">1 день - Nythera-XXXXXXXXXXXX-1d</option>
+                      <option value="3d">3 дня - Nythera-XXXXXXXXXXXX-3d</option>
+                      <option value="7d">7 дней - Nythera-XXXXXXXXXXXX-7d</option>
+                      <option value="1m">1 месяц - Nythera-XXXXXXXXXXXX-1m</option>
+                      <option value="3m">3 месяца - Nythera-XXXXXXXXXXXX-3m</option>
+                      <option value="6m">6 месяцев - Nythera-XXXXXXXXXXXX-6m</option>
+                      <option value="1y">1 год - Nythera-XXXXXXXXXXXX-1y</option>
+                      <option value="forever">Навсегда - Nythera-XXXXXXXXXXXX-XX</option>
+                    </select>
+                  </label>
+                  <button class="btn" type="submit" id="generateKeyBtn">Сгенерировать ключ</button>
+                </form>
+                <div class="generated-key mono" id="generatedKey"></div>
+              </div>
+            </div>
+
+            <div class="admin-divider"></div>
+
+            <div class="admin-section">
+              <div class="collapsible-head">
+                <h2>Ключ сброса HWID</h2>
+                <button class="btn small ghost collapsible-toggle" type="button" data-collapsible-toggle aria-expanded="false" aria-controls="adminHwidResetBody">Развернуть</button>
+              </div>
+              <div class="collapsible-body" id="adminHwidResetBody" hidden>
+                <div class="message" id="adminHwidMessage"></div>
+                <button class="btn" type="button" id="generateHwidKeyBtn">Сгенерировать ключ сброса HWID</button>
+                <div class="generated-key mono" id="generatedHwidKey"></div>
+              </div>
+            </div>
+
+            <div class="admin-divider"></div>
+
+            <div class="admin-section">
+              <div class="collapsible-head">
+                <h2>Загрузка обновлений</h2>
+                <button class="btn small ghost collapsible-toggle" type="button" data-collapsible-toggle aria-expanded="false" aria-controls="adminUploadUpdatesBody">Развернуть</button>
+              </div>
+              <div class="collapsible-body" id="adminUploadUpdatesBody" hidden>
+                <div class="message" id="updateMessage"></div>
+                <form id="uploadUpdateForm">
+                  <label>Тип обновления
+                    <select name="type" required>
+                      <option value="client">Клиент</option>
+                      <option value="loader">Лоадер</option>
+                    </select>
+                  </label>
+                  <label>Версия
+                    <input name="version" placeholder="Например 1.0.1" required />
+                  </label>
+                  <label>Файл
+                    <input name="file" type="file" required />
+                  </label>
+                  <p class="file-hint">Сервер сам посчитает SHA-256, загрузит файл в Supabase Storage и сохранит хеш в базе. Лоадер сможет сверять локальный хеш с серверным.</p>
+                  <button class="btn" type="submit" id="uploadUpdateBtn">Загрузить обновление</button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="admin-section">
+              <div class="collapsible-head">
+                <h2>История ключей</h2>
+                <button class="btn small ghost collapsible-toggle" type="button" id="keysHistoryToggle" data-collapsible-toggle aria-expanded="false" aria-controls="keysHistoryBody">Развернуть</button>
+              </div>
+              <div class="collapsible-body" id="keysHistoryBody" hidden>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Ключ</th>
+                        <th>Срок</th>
+                        <th>Статус</th>
+                        <th>Источник</th>
+                        <th>Создал</th>
+                        <th>Активировал</th>
+                        <th>Дата</th>
+                      </tr>
+                    </thead>
+                    <tbody id="keysTable">
+                      <tr><td colspan="7">Загрузка...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="admin-divider"></div>
+
+            <div class="admin-section">
+              <div class="collapsible-head">
+                <h2>История HWID-ключей</h2>
+                <button class="btn small ghost collapsible-toggle" type="button" data-collapsible-toggle aria-expanded="false" aria-controls="adminHwidKeysHistoryBody">Развернуть</button>
+              </div>
+              <div class="collapsible-body" id="adminHwidKeysHistoryBody" hidden>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Ключ</th>
+                        <th>Статус</th>
+                        <th>Создал</th>
+                        <th>Активировал</th>
+                        <th>Старый HWID</th>
+                        <th>Создан</th>
+                        <th>Активирован</th>
+                      </tr>
+                    </thead>
+                    <tbody id="hwidKeysTable">
+                      <tr><td colspan="7">Загрузка...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="grid-column: 1 / -1;">
+            <div class="collapsible-head">
+              <h2>Обновления лоадера и клиента</h2>
+              <button class="btn small ghost collapsible-toggle" type="button" data-collapsible-toggle aria-expanded="false" aria-controls="adminUpdatesBody">Развернуть</button>
+            </div>
+            <div class="collapsible-body" id="adminUpdatesBody" hidden>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Тип</th>
+                      <th>Версия</th>
+                      <th>Файл</th>
+                      <th>SHA-256</th>
+                      <th>Storage</th>
+                      <th>Загрузил</th>
+                      <th>Дата</th>
+                    </tr>
+                  </thead>
+                  <tbody id="updatesTable">
+                    <tr><td colspan="7">Загрузка...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="grid-column: 1 / -1;">
+            <div class="collapsible-head">
+              <h2>Пользователи</h2>
+              <button class="btn small ghost collapsible-toggle" type="button" data-collapsible-toggle aria-expanded="false" aria-controls="adminUsersBody">Развернуть</button>
+            </div>
+            <div class="collapsible-body" id="adminUsersBody" hidden>
+              <div class="toolbar">
+                <input id="adminUserSearch" placeholder="Поиск: UID, email, ник, HWID" />
+                <select id="adminUserRoleFilter">
+                  <option value="">Все роли</option>
+                  <option value="user">User</option>
+                  <option value="media">Media</option>
+                  <option value="admin">Admin</option>
+                </select>
+                <select id="adminUserBanFilter">
+                  <option value="">Бан: все</option>
+                  <option value="yes">Забаненные</option>
+                  <option value="no">Не забаненные</option>
+                </select>
+                <select id="adminUserSubscriptionFilter">
+                  <option value="">Подписка: все</option>
+                  <option value="active">Активная</option>
+                  <option value="none">Нет подписки</option>
+                </select>
+                <button class="btn small ghost" id="adminUserSearchBtn" type="button">Найти</button>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>UID</th>
+                      <th>Ник / Email</th>
+                      <th>Роль</th>
+                      <th>Бан</th>
+                      <th>Подписка</th>
+                      <th>HWID</th>
+                      <th>Управление</th>
+                    </tr>
+                  </thead>
+                  <tbody id="usersTable">
+                    <tr><td colspan="7">Загрузка...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="grid-column: 1 / -1;">
+            <div class="collapsible-head">
+              <h2>Безопасность аккаунтов</h2>
+              <button class="btn small ghost collapsible-toggle" type="button" data-collapsible-toggle aria-expanded="false" aria-controls="adminSecurityBody">Развернуть</button>
+            </div>
+            <div class="collapsible-body" id="adminSecurityBody" hidden>
+              <p class="file-hint" style="margin-bottom:16px;">
+                Сервер временно блокирует вход после 5 неправильных попыток за 15 минут, логирует неудачные входы и создает флаги, если аккаунт часто входит с разных IP/HWID.
+              </p>
+
+              <div class="admin-subsection">
+                <h2 style="font-size:24px;">Флаги безопасности</h2>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Аккаунт</th>
+                        <th>Причина</th>
+                        <th>Детали</th>
+                        <th>Статус</th>
+                        <th>Дата</th>
+                        <th>Действие</th>
+                      </tr>
+                    </thead>
+                    <tbody id="securityFlagsTable">
+                      <tr><td colspan="6">Загрузка...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="admin-divider"></div>
+
+              <div class="admin-subsection">
+                <h2 style="font-size:24px;">Неудачные попытки входа</h2>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Аккаунт</th>
+                        <th>Контекст</th>
+                        <th>Причина</th>
+                        <th>IP</th>
+                        <th>HWID</th>
+                        <th>Дата</th>
+                      </tr>
+                    </thead>
+                    <tbody id="failedLoginsTable">
+                      <tr><td colspan="6">Загрузка...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="grid-column: 1 / -1;">
+            <div class="collapsible-head">
+              <h2>Журнал действий админа</h2>
+              <button class="btn small ghost collapsible-toggle" type="button" data-collapsible-toggle aria-expanded="false" aria-controls="adminAuditBody">Развернуть</button>
+            </div>
+            <div class="collapsible-body" id="adminAuditBody" hidden>
+              <p class="file-hint" style="margin-bottom:16px;">Кто создал ключ, загрузил обновление, забанил пользователя или изменил настройки.</p>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr><th>Админ</th><th>Действие</th><th>Цель</th><th>Детали</th><th>IP</th><th>Дата</th></tr>
+                  </thead>
+                  <tbody id="auditTable"><tr><td colspan="6">Загрузка...</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const token = localStorage.getItem('nythera_token');
+    const loading = document.getElementById('loading');
+    const cabinet = document.getElementById('cabinet');
+    const passwordForm = document.getElementById('passwordForm');
+    const passwordMessage = document.getElementById('passwordMessage');
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    const activateKeyForm = document.getElementById('activateKeyForm');
+    const activateKeyBtn = document.getElementById('activateKeyBtn');
+    const keyMessage = document.getElementById('keyMessage');
+    const adminPanel = document.getElementById('adminPanel');
+    const mediaPanel = document.getElementById('mediaPanel');
+    const mediaMessage = document.getElementById('mediaMessage');
+    const mediaKeysTable = document.getElementById('mediaKeysTable');
+    const generateKeyForm = document.getElementById('generateKeyForm');
+    const generateKeyBtn = document.getElementById('generateKeyBtn');
+    const generatedKey = document.getElementById('generatedKey');
+    const adminMessage = document.getElementById('adminMessage');
+    const generateHwidKeyBtn = document.getElementById('generateHwidKeyBtn');
+    const generatedHwidKey = document.getElementById('generatedHwidKey');
+    const adminHwidMessage = document.getElementById('adminHwidMessage');
+    const keysTable = document.getElementById('keysTable');
+    const keysHistoryToggle = document.getElementById('keysHistoryToggle');
+    const keysHistoryBody = document.getElementById('keysHistoryBody');
+    const hwidKeysTable = document.getElementById('hwidKeysTable');
+    const uploadUpdateForm = document.getElementById('uploadUpdateForm');
+    const uploadUpdateBtn = document.getElementById('uploadUpdateBtn');
+    const updateMessage = document.getElementById('updateMessage');
+    const updatesTable = document.getElementById('updatesTable');
+    const usersTable = document.getElementById('usersTable');
+    const myActivationsTable = document.getElementById('myActivationsTable');
+    const statusApi = document.getElementById('statusApi');
+    const statusLoaderLogin = document.getElementById('statusLoaderLogin');
+    const statusLoaderVersion = document.getElementById('statusLoaderVersion');
+    const statusClientVersion = document.getElementById('statusClientVersion');
+    const auditTable = document.getElementById('auditTable');
+    const adminUserSearch = document.getElementById('adminUserSearch');
+    const adminUserRoleFilter = document.getElementById('adminUserRoleFilter');
+    const adminUserBanFilter = document.getElementById('adminUserBanFilter');
+    const adminUserSubscriptionFilter = document.getElementById('adminUserSubscriptionFilter');
+    const adminUserSearchBtn = document.getElementById('adminUserSearchBtn');
+    const securityFlagsTable = document.getElementById('securityFlagsTable');
+    const failedLoginsTable = document.getElementById('failedLoginsTable');
+    const loginSettingsForm = document.getElementById('loginSettingsForm');
+    const loginSettingsMessage = document.getElementById('loginSettingsMessage');
+    const siteLoginEnabledToggle = document.getElementById('siteLoginEnabledToggle');
+    const loaderLoginEnabledToggle = document.getElementById('loaderLoginEnabledToggle');
+    const minLoaderVersionInput = document.getElementById('minLoaderVersionInput');
+    const saveLoginSettingsBtn = document.getElementById('saveLoginSettingsBtn');
+    const downloadLoaderBtn = document.getElementById('downloadLoaderBtn');
+    const heroDownloadLoaderBtn = document.getElementById('heroDownloadLoaderBtn');
+    const downloadMessage = document.getElementById('downloadMessage');
+    let currentUser = null;
+
+    function setCollapsibleCollapsed(toggle, collapsed) {
+      const bodyId = toggle?.getAttribute('aria-controls');
+      const body = bodyId ? document.getElementById(bodyId) : null;
+      if (!toggle || !body) return;
+      body.hidden = Boolean(collapsed);
+      toggle.setAttribute('aria-expanded', String(!collapsed));
+      toggle.textContent = collapsed ? 'Развернуть' : 'Свернуть';
+    }
+
+    const loadedAdminSections = new Set();
+
+    function getAdminLazyLoader(bodyId) {
+      return ({
+        adminLoginSettingsBody: loadAdminLoginSettings,
+        keysHistoryBody: loadAdminKeys,
+        adminHwidKeysHistoryBody: loadAdminHwidKeys,
+        adminUpdatesBody: loadAdminUpdates,
+        adminUsersBody: loadAdminUsers,
+        adminSecurityBody: loadAdminSecurity,
+        adminAuditBody: loadAdminAudit
+      })[bodyId];
+    }
+
+    async function loadAdminSection(bodyId, force = false) {
+      const loader = getAdminLazyLoader(bodyId);
+      if (!loader) return;
+      if (!force && loadedAdminSections.has(bodyId)) return;
+      loadedAdminSections.add(bodyId);
+      try {
+        await loader();
+      } catch (error) {
+        loadedAdminSections.delete(bodyId);
+        console.error('Admin section load failed:', bodyId, error);
+      }
+    }
+
+    function markAdminSectionDirty(bodyId) {
+      loadedAdminSections.delete(bodyId);
+    }
+
+    function setupAdminCollapsibles() {
+      document.querySelectorAll('[data-collapsible-toggle]').forEach((toggle) => {
+        setCollapsibleCollapsed(toggle, true);
+        toggle.addEventListener('click', () => {
+          const body = document.getElementById(toggle.getAttribute('aria-controls'));
+          const nextCollapsed = !body?.hidden;
+          setCollapsibleCollapsed(toggle, nextCollapsed);
+          if (!nextCollapsed) loadAdminSection(body?.id);
+        });
+      });
+    }
+
+    setupAdminCollapsibles();
+
+    function formatDate(value) {
+      if (!value) return '—';
+      const date = new Date(value);
+      if (date.getFullYear() >= 9999) return 'Навсегда';
+      return date.toLocaleDateString('ru-RU');
+    }
+
+    function formatDateTime(value) {
+      if (!value) return '—';
+      const date = new Date(value);
+      if (date.getFullYear() >= 9999) return 'Навсегда';
+      return date.toLocaleString('ru-RU');
+    }
+
+    function isAdmin(user) {
+      return String(user?.role || '').toLowerCase() === 'admin';
+    }
+
+    function isMedia(user) {
+      return String(user?.role || '').toLowerCase() === 'media';
+    }
+
+    function showMessage(element, text, isError = false) {
+      element.textContent = text;
+      element.classList.toggle('error', isError);
+      element.style.display = 'block';
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[char]));
+    }
+
+    function personCell(uid, nickname, email, fallback = '—') {
+      const hasUid = uid !== null && uid !== undefined && String(uid).trim() !== '';
+      const hasNickname = nickname !== null && nickname !== undefined && String(nickname).trim() !== '';
+      const hasEmail = email !== null && email !== undefined && String(email).trim() !== '';
+      if (!hasUid && !hasNickname && !hasEmail) return fallback;
+      const uidLine = hasUid ? `UID ${escapeHtml(uid)}<br>` : '';
+      const nameLine = escapeHtml(hasNickname ? nickname : '—');
+      const emailLine = escapeHtml(hasEmail ? email : '—');
+      return `${uidLine}${nameLine}<br><small>${emailLine}</small>`;
+    }
+
+    function setUser(user) {
+      currentUser = user;
+      document.getElementById('profileTitle').textContent = `Профиль ${user.nickname}`;
+      document.getElementById('welcomeText').textContent = `Привет, ${user.nickname}. Здесь данные твоего аккаунта.`;
+      document.getElementById('uid').textContent = user.uid;
+      document.getElementById('nickname').textContent = user.nickname;
+      document.getElementById('email').textContent = user.email;
+      document.getElementById('subscriptionUntil').textContent = formatDate(user.subscription_until);
+      document.getElementById('hwid').textContent = user.hwid || '—';
+      document.getElementById('createdAt').textContent = formatDate(user.created_at);
+      const roleElement = document.getElementById('role');
+      roleElement.textContent = user.role || 'user';
+      roleElement.classList.toggle('role-admin', isAdmin(user));
+      adminPanel.style.display = isAdmin(user) ? 'block' : 'none';
+      mediaPanel.style.display = isMedia(user) ? 'block' : 'none';
+      loading.classList.add('hidden');
+      cabinet.classList.remove('hidden');
+      loadMyActivations(); loadPublicStatus();
+      if (isMedia(user)) loadMediaKeys();
+      if (isAdmin(user)) { document.querySelectorAll('#adminPanel [data-collapsible-toggle]').forEach((toggle) => setCollapsibleCollapsed(toggle, true)); }
+    }
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, {
+        ...options,
+        headers: {
+          ...(options.headers || {}),
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const text = await response.text();
+      const result = text ? JSON.parse(text) : {};
+      if (!response.ok) throw new Error(result.error || 'Ошибка сервера');
+      return result;
+    }
+
+    async function loadMe() {
+      if (!token) {
+        window.location.href = '/';
+        return;
+      }
+      try {
+        const result = await api('/api/me');
+        setUser(result.user);
+      } catch {
+        localStorage.removeItem('nythera_token');
+        window.location.href = '/';
+      }
+    }
+
+
+    async function loadMyActivations() {
+      try {
+        const result = await api('/api/my/activations');
+        const activations = result.activations || [];
+        if (!activations.length) {
+          myActivationsTable.innerHTML = '<tr><td colspan="4">Активаций пока нет</td></tr>';
+          return;
+        }
+        myActivationsTable.innerHTML = activations.map((item) => `
+          <tr>
+            <td class="mono">${item.code || '—'}</td>
+            <td>${item.duration || '—'}</td>
+            <td>${formatDateTime(item.activated_at)}</td>
+            <td>${formatDate(item.subscription_until)}</td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        myActivationsTable.innerHTML = `<tr><td colspan="4">${error.message || 'Ошибка загрузки активаций'}</td></tr>`;
+      }
+    }
+
+    async function loadPublicStatus() {
+      try {
+        const response = await fetch('/api/status');
+        const status = await response.json();
+        statusApi.textContent = status.api || 'online';
+        statusLoaderLogin.textContent = status.loaderLoginEnabled ? 'Включен' : 'Отключен';
+        statusLoaderVersion.textContent = status.latestLoaderVersion || '—';
+        statusClientVersion.textContent = status.latestClientVersion || '—';
+      } catch {
+        statusApi.textContent = 'Ошибка';
+      }
+    }
+
+    async function logout() {
+      try { await fetch('/api/logout', { method: 'POST' }); } catch {}
+      localStorage.removeItem('nythera_token');
+      window.location.href = '/';
+    }
+
+    activateKeyForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      activateKeyBtn.disabled = true;
+      activateKeyBtn.textContent = 'Активируем...';
+      keyMessage.style.display = 'none';
+      const data = new FormData(activateKeyForm);
+      try {
+        const result = await api('/api/activate-key', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: data.get('code') })
+        });
+        activateKeyForm.reset();
+        setUser(result.user);
+        if (result.type === 'hwid-reset') {
+          showMessage(keyMessage, result.message || 'HWID сброшен. Следующий вход через лоадер привяжет новое устройство.');
+        } else {
+          showMessage(keyMessage, `Ключ активирован. Подписка до ${formatDate(result.user.subscription_until)}`);
+        }
+      } catch (error) {
+        showMessage(keyMessage, error.message || 'Ошибка активации', true);
+      } finally {
+        activateKeyBtn.disabled = false;
+        activateKeyBtn.textContent = 'Активировать ключ';
+      }
+    });
+
+    passwordForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      changePasswordBtn.disabled = true;
+      changePasswordBtn.textContent = 'Меняем...';
+      passwordMessage.style.display = 'none';
+      const data = new FormData(passwordForm);
+      try {
+        await api('/api/change-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ oldPassword: data.get('oldPassword'), newPassword: data.get('newPassword') })
+        });
+        passwordForm.reset();
+        showMessage(passwordMessage, 'Пароль успешно изменен');
+      } catch (error) {
+        showMessage(passwordMessage, error.message || 'Ошибка сервера', true);
+      } finally {
+        changePasswordBtn.disabled = false;
+        changePasswordBtn.textContent = 'Изменить пароль';
+      }
+    });
+
+    generateKeyForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      generateKeyBtn.disabled = true;
+      generateKeyBtn.textContent = 'Генерируем...';
+      adminMessage.style.display = 'none';
+      generatedKey.style.display = 'none';
+      const data = new FormData(generateKeyForm);
+      try {
+        const result = await api('/api/admin/keys', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ duration: data.get('duration') })
+        });
+        generatedKey.textContent = result.key.code;
+        generatedKey.style.display = 'block';
+        showMessage(adminMessage, 'Ключ создан. Его можно передать игроку.');
+        markAdminSectionDirty('keysHistoryBody');
+        if (!keysHistoryBody?.hidden) await loadAdminSection('keysHistoryBody', true);
+      } catch (error) {
+        showMessage(adminMessage, error.message || 'Ошибка генерации', true);
+      } finally {
+        generateKeyBtn.disabled = false;
+        generateKeyBtn.textContent = 'Сгенерировать ключ';
+      }
+    });
+
+    generateHwidKeyBtn?.addEventListener('click', async () => {
+      generateHwidKeyBtn.disabled = true;
+      generateHwidKeyBtn.textContent = 'Генерируем...';
+      adminHwidMessage.style.display = 'none';
+      generatedHwidKey.style.display = 'none';
+      try {
+        const result = await api('/api/admin/hwid-keys', { method: 'POST' });
+        generatedHwidKey.textContent = result.key.code;
+        generatedHwidKey.style.display = 'block';
+        showMessage(adminHwidMessage, 'Ключ сброса HWID создан. Его можно передать игроку.');
+        markAdminSectionDirty('adminHwidKeysHistoryBody');
+        const hwidHistoryBody = document.getElementById('adminHwidKeysHistoryBody');
+        if (!hwidHistoryBody?.hidden) await loadAdminSection('adminHwidKeysHistoryBody', true);
+      } catch (error) {
+        showMessage(adminHwidMessage, error.message || 'Ошибка генерации HWID ключа', true);
+      } finally {
+        generateHwidKeyBtn.disabled = false;
+        generateHwidKeyBtn.textContent = 'Сгенерировать ключ сброса HWID';
+      }
+    });
+
+    uploadUpdateForm?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      uploadUpdateBtn.disabled = true;
+      uploadUpdateBtn.textContent = 'Загружаем...';
+      updateMessage.style.display = 'none';
+      const data = new FormData(uploadUpdateForm);
+      try {
+        const result = await api('/api/admin/updates', { method: 'POST', body: data });
+        uploadUpdateForm.reset();
+        showMessage(updateMessage, 'Обновление загружено. SHA-256: ' + result.update.sha256);
+        markAdminSectionDirty('adminUpdatesBody');
+        const updatesBody = document.getElementById('adminUpdatesBody');
+        if (!updatesBody?.hidden) await loadAdminSection('adminUpdatesBody', true);
+      } catch (error) {
+        showMessage(updateMessage, error.message || 'Ошибка загрузки', true);
+      } finally {
+        uploadUpdateBtn.disabled = false;
+        uploadUpdateBtn.textContent = 'Загрузить обновление';
+      }
+    });
+
+    async function loadAdminKeys() {
+      try {
+        const result = await api('/api/admin/keys');
+        if (!result.keys.length) {
+          keysTable.innerHTML = '<tr><td colspan="7">Ключей пока нет</td></tr>';
+          return;
+        }
+        keysTable.innerHTML = result.keys.map((key) => {
+          const used = Boolean(key.activated_at);
+          const status = used ? 'activated' : (key.status || 'approved');
+          const statusText = status === 'pending'
+            ? 'Ожидает подтверждения'
+            : status === 'approved'
+              ? 'Подтверждено'
+              : 'Активировано';
+          const statusClass = status === 'pending' ? 'status-new' : status === 'approved' ? 'status-new' : 'status-used';
+          const approveButton = status === 'pending' && key.source === 'media'
+            ? `<br><button class="btn small" type="button" data-approve-key="${key.id}">Подтвердить</button>`
+            : '';
+          const activatedBy = used
+            ? personCell(key.activated_by_uid, key.activated_by_nickname, key.activated_by_email)
+            : '—';
+
+          let source = 'Admin';
+          if (key.source === 'telegram') {
+            source = `Telegram<br><small>${escapeHtml(key.telegram_id || '—')}</small>`;
+          } else if (key.source === 'media') {
+            source = `Media<br><small>UID ${escapeHtml(key.media_uid || '—')}</small><br><small>${escapeHtml(key.media_nickname || '—')}</small>`;
+          }
+
+          let createdBy = personCell(key.created_by_uid, key.created_by_nickname, key.created_by_email, '');
+          if (!createdBy && key.source === 'media') {
+            createdBy = personCell(key.media_uid, key.media_nickname, key.media_email, '');
+          }
+          if (!createdBy && key.source === 'telegram') {
+            createdBy = `Telegram Bot<br><small>${escapeHtml(key.telegram_id || '—')}</small>`;
+          }
+          if (!createdBy) createdBy = '—';
+
+          return `
+            <tr>
+              <td class="mono">${escapeHtml(key.code)}</td>
+              <td>${escapeHtml(key.duration)}</td>
+              <td class="${statusClass}">${statusText}${approveButton}</td>
+              <td>${source}</td>
+              <td>${createdBy}</td>
+              <td>${activatedBy}</td>
+              <td>${used ? formatDateTime(key.activated_at) : formatDateTime(key.created_at)}</td>
+            </tr>
+          `;
+        }).join('');
+      } catch (error) {
+        keysTable.innerHTML = `<tr><td colspan="7">${error.message || 'Ошибка загрузки ключей'}</td></tr>`;
+      }
+    }
+
+    async function approveMediaKey(keyId) {
+      try {
+        await api(`/api/admin/keys/${keyId}/approve`, { method: 'POST' });
+        await loadAdminKeys();
+      } catch (error) {
+        alert(error.message || 'Не удалось подтвердить ключ');
+      }
+    }
+
+    async function loadMediaKeys() {
+      try {
+        const result = await api('/api/media/keys');
+        if (!result.keys.length) {
+          mediaKeysTable.innerHTML = '<tr><td colspan="2">Подтвержденных ключей пока нет</td></tr>';
+          return;
+        }
+        mediaKeysTable.innerHTML = result.keys.map((key) => {
+          const activated = key.status === 'activated';
+          return `
+            <tr>
+              <td class="mono">${key.code}</td>
+              <td class="${activated ? 'status-used' : 'status-new'}">${activated ? 'Активирован' : 'Не активирован'}</td>
+            </tr>
+          `;
+        }).join('');
+      } catch (error) {
+        mediaKeysTable.innerHTML = `<tr><td colspan="2">${error.message || 'Ошибка загрузки ключей'}</td></tr>`;
+      }
+    }
+
+    async function requestMediaKey(duration) {
+      if (!confirm('Вы подтверждаете, что не будете продавать или перепродавать этот ключ? За нарушение — бан и снятие подписки.')) return;
+      mediaMessage.style.display = 'none';
+      try {
+        const result = await api('/api/media/keys', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ duration })
+        });
+        showMessage(mediaMessage, result.message || 'Заявка создана. Ожидайте подтверждения администратора.');
+        await loadMediaKeys();
+      } catch (error) {
+        showMessage(mediaMessage, error.message || 'Не удалось создать заявку', true);
+      }
+    }
+
+    async function loadAdminHwidKeys() {
+      try {
+        const result = await api('/api/admin/hwid-keys');
+        if (!result.keys.length) {
+          hwidKeysTable.innerHTML = '<tr><td colspan="7">Ключей сброса HWID пока нет</td></tr>';
+          return;
+        }
+        hwidKeysTable.innerHTML = result.keys.map((key) => {
+          const used = Boolean(key.used_at);
+          const usedBy = used
+            ? `UID ${key.used_by_uid || '—'}<br>${key.used_by_nickname || '—'}<br>${key.used_by_email || '—'}`
+            : '—';
+          const createdBy = `${key.created_by_nickname || '—'}<br>${key.created_by_email || '—'}`;
+          return `
+            <tr>
+              <td class="mono">${key.code}</td>
+              <td class="${used ? 'status-used' : 'status-new'}">${used ? 'Использован' : 'Свободен'}</td>
+              <td>${createdBy}</td>
+              <td>${usedBy}</td>
+              <td class="mono">${key.old_hwid || '—'}</td>
+              <td>${formatDateTime(key.created_at)}</td>
+              <td>${used ? formatDateTime(key.used_at) : '—'}</td>
+            </tr>
+          `;
+        }).join('');
+      } catch (error) {
+        hwidKeysTable.innerHTML = `<tr><td colspan="7">${error.message || 'Ошибка загрузки HWID ключей'}</td></tr>`;
+      }
+    }
+
+    async function loadAdminUpdates() {
+      try {
+        const result = await api('/api/admin/updates');
+        if (!result.updates.length) {
+          updatesTable.innerHTML = '<tr><td colspan="8">Обновлений пока нет</td></tr>';
+          return;
+        }
+        updatesTable.innerHTML = result.updates.map((update) => {
+          const sizeMb = update.size_bytes ? (Number(update.size_bytes) / 1024 / 1024).toFixed(2) + ' MB' : '—';
+          const owner = update.uploaded_by_nickname || update.uploaded_by_email || '—';
+          const active = update.is_active !== false;
+          return '<tr>' +
+            '<td>' + update.type + '</td>' +
+            '<td>' + update.version + '</td>' +
+            '<td>' + (update.fileName || update.file_name) + '<br><small>' + sizeMb + '</small></td>' +
+            '<td class="mono">' + update.sha256 + '</td>' +
+            '<td>' + (update.storageProvider || update.storage_provider || 'local') + '<br><small>' + (active ? 'Активно' : 'Отключено') + '</small></td>' +
+            '<td>' + owner + '</td>' +
+            '<td>' + formatDateTime(update.created_at) + '</td>' +
+            '<td><button class="btn small ghost" type="button" data-update-active="' + update.id + '" data-active="' + (active ? 'false' : 'true') + '">' + (active ? 'Отключить' : 'Включить') + '</button></td>' +
+          '</tr>';
+        }).join('');
+      } catch (error) {
+        updatesTable.innerHTML = '<tr><td colspan="8">' + (error.message || 'Ошибка загрузки обновлений') + '</td></tr>';
+      }
+    }
+
+    async function setUpdateActive(updateId, active) {
+      try {
+        await api(`/api/admin/updates/${updateId}/active`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ active })
+        });
+        await loadAdminUpdates();
+      } catch (error) {
+        alert(error.message || 'Не удалось изменить статус обновления');
+      }
+    }
+
+
+
+    function normalizeSecurityDetails(details) {
+      if (!details) return {};
+      if (typeof details === 'string') {
+        try {
+          return JSON.parse(details);
+        } catch (_) {
+          return { payload: details };
+        }
+      }
+      return details;
+    }
+
+    function firstDetail(details, keys) {
+      for (const key of keys) {
+        if (details[key] !== undefined && details[key] !== null && String(details[key]).trim() !== '') {
+          return details[key];
+        }
+      }
+      return '';
+    }
+
+    function stringifyDetailValue(value) {
+      if (Array.isArray(value)) return value.join(', ');
+      if (value && typeof value === 'object') return JSON.stringify(value);
+      return String(value ?? '');
+    }
+
+    function formatSecurityDetails(details) {
+      const normalized = normalizeSecurityDetails(details);
+      if (!normalized || !Object.keys(normalized).length) return '—';
+
+      const rows = [
+        ['UID', firstDetail(normalized, ['uid', 'user_uid', 'userId'])],
+        ['Nickname', firstDetail(normalized, ['nickname', 'user_nickname'])],
+        ['Email', firstDetail(normalized, ['email', 'user_email'])],
+        ['HWID', firstDetail(normalized, ['hwid', 'hardware_id'])],
+        ['IP', firstDetail(normalized, ['ip', 'client_ip', 'clientIp'])],
+        ['Процесс', firstDetail(normalized, ['blocked_process', 'blockedProcess', 'process'])],
+        ['Тип', firstDetail(normalized, ['flagType', 'flag_type'])],
+        ['Источник', firstDetail(normalized, ['source'])],
+        ['Время отчета', firstDetail(normalized, ['reportedAt', 'reported_at'])]
+      ].filter(([, value]) => value !== undefined && value !== null && String(value).trim() !== '');
+
+      if (rows.length) {
+        return rows.map(([label, value]) => `<strong>${escapeHtml(label)}:</strong> ${escapeHtml(stringifyDetailValue(value))}`).join('<br>');
+      }
+
+      const value = JSON.stringify(normalized);
+      const shortened = value.length > 420 ? value.slice(0, 420) + '...' : value;
+      return escapeHtml(shortened);
+    }
+
+    function securityAccountHtml(flag) {
+      const details = normalizeSecurityDetails(flag.details);
+      const uid = firstDetail(details, ['uid', 'user_uid', 'userId']) || flag.uid || '—';
+      const nickname = firstDetail(details, ['nickname', 'user_nickname']) || flag.nickname || '—';
+      const email = firstDetail(details, ['email', 'user_email']) || flag.email || '—';
+      return `UID ${escapeHtml(stringifyDetailValue(uid))}<br>${escapeHtml(stringifyDetailValue(nickname))}<br><small>${escapeHtml(stringifyDetailValue(email))}</small>`;
+    }
+
+    function securityReasonText(reason) {
+      const map = {
+        wrong_password: 'Неверный пароль',
+        user_not_found: 'Пользователь не найден',
+        banned: 'Аккаунт заблокирован',
+        hwid_mismatch: 'HWID не совпал',
+        invalid_hwid: 'Некорректный HWID'
+      };
+      return map[reason] || reason || '—';
+    }
+
+    async function loadAdminLoginSettings() {
+      try {
+        const result = await api('/api/admin/login-settings');
+        const settings = result.settings || {};
+        siteLoginEnabledToggle.checked = Boolean(settings.siteLoginEnabled);
+        loaderLoginEnabledToggle.checked = Boolean(settings.loaderLoginEnabled);
+        minLoaderVersionInput.value = settings.minLoaderVersion || '';
+      } catch (error) {
+        showMessage(loginSettingsMessage, error.message || 'Не удалось загрузить настройки входа', true);
+      }
+    }
+
+    loginSettingsForm?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      saveLoginSettingsBtn.disabled = true;
+      saveLoginSettingsBtn.textContent = 'Сохраняем...';
+      loginSettingsMessage.style.display = 'none';
+
+      try {
+        const result = await api('/api/admin/login-settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            siteLoginEnabled: siteLoginEnabledToggle.checked,
+            loaderLoginEnabled: loaderLoginEnabledToggle.checked,
+            minLoaderVersion: minLoaderVersionInput.value.trim()
+          })
+        });
+
+        const settings = result.settings || {};
+        siteLoginEnabledToggle.checked = Boolean(settings.siteLoginEnabled);
+        loaderLoginEnabledToggle.checked = Boolean(settings.loaderLoginEnabled);
+        minLoaderVersionInput.value = settings.minLoaderVersion || '';
+
+        if (!settings.siteLoginEnabled || !settings.loaderLoginEnabled) {
+          showMessage(loginSettingsMessage, 'Настройки сохранены. Один из способов входа временно отключен.');
+        } else {
+          showMessage(loginSettingsMessage, 'Настройки сохранены. Вход через сайт и лоадер включен.');
+        }
+      } catch (error) {
+        showMessage(loginSettingsMessage, error.message || 'Не удалось сохранить настройки входа', true);
+      } finally {
+        saveLoginSettingsBtn.disabled = false;
+        saveLoginSettingsBtn.textContent = 'Сохранить настройки входа';
+      }
+    });
+
+    async function loadAdminSecurity() {
+      try {
+        const result = await api('/api/admin/security');
+
+        if (!result.flags.length) {
+          securityFlagsTable.innerHTML = '<tr><td colspan="6">Открытых флагов пока нет</td></tr>';
+        } else {
+          securityFlagsTable.innerHTML = result.flags.map((flag) => {
+            const open = String(flag.status || 'open') === 'open';
+            const account = securityAccountHtml(flag);
+            return `
+              <tr>
+                <td>${account}</td>
+                <td>${escapeHtml(flag.message || flag.type || '—')}</td>
+                <td class="mono">${formatSecurityDetails(flag.details)}</td>
+                <td class="${open ? 'status-used' : 'status-new'}">${open ? 'Открыт' : 'Закрыт'}</td>
+                <td>${formatDateTime(flag.created_at)}</td>
+                <td>
+                  ${open ? `<button class="btn small ghost" type="button" data-resolve-flag="${flag.id}">Закрыть</button>` : '—'}
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+
+        if (!result.failedAttempts.length) {
+          failedLoginsTable.innerHTML = '<tr><td colspan="6">Неудачных попыток пока нет</td></tr>';
+        } else {
+          failedLoginsTable.innerHTML = result.failedAttempts.map((attempt) => {
+            const account = `UID ${escapeHtml(attempt.uid || '—')}<br>${escapeHtml(attempt.nickname || '—')}<br><small>${escapeHtml(attempt.email || '—')}</small>`;
+            return `
+              <tr>
+                <td>${account}</td>
+                <td>${escapeHtml(attempt.context || 'site')}</td>
+                <td>${escapeHtml(securityReasonText(attempt.reason))}</td>
+                <td class="mono">${escapeHtml(attempt.ip || '—')}</td>
+                <td class="mono">${escapeHtml(attempt.hwid || '—')}</td>
+                <td>${formatDateTime(attempt.created_at)}</td>
+              </tr>
+            `;
+          }).join('');
+        }
+      } catch (error) {
+        securityFlagsTable.innerHTML = `<tr><td colspan="6">${error.message || 'Ошибка загрузки безопасности'}</td></tr>`;
+        failedLoginsTable.innerHTML = `<tr><td colspan="6">${error.message || 'Ошибка загрузки безопасности'}</td></tr>`;
+      }
+    }
+
+    async function resolveSecurityFlag(flagId) {
+      try {
+        await api(`/api/admin/security/flags/${flagId}/resolve`, { method: 'POST' });
+        await loadAdminSecurity();
+      } catch (error) {
+        alert(error.message || 'Не удалось закрыть флаг');
+      }
+    }
+
+    async function loadAdminUsers() {
+      try {
+        const params = new URLSearchParams();
+        if (adminUserSearch?.value.trim()) params.set('q', adminUserSearch.value.trim());
+        if (adminUserRoleFilter?.value) params.set('role', adminUserRoleFilter.value);
+        if (adminUserBanFilter?.value) params.set('banned', adminUserBanFilter.value);
+        if (adminUserSubscriptionFilter?.value) params.set('subscription', adminUserSubscriptionFilter.value);
+        const url = '/api/admin/users' + (params.toString() ? '?' + params.toString() : '');
+        const result = await api(url);
+        if (!result.users.length) {
+          usersTable.innerHTML = '<tr><td colspan="7">Пользователей не найдено</td></tr>';
+          return;
+        }
+        usersTable.innerHTML = result.users.map((user) => {
+          const banned = String(user.banned || 'no').toLowerCase() === 'yes';
+          return `
+            <tr>
+              <td>${user.uid || user.id}</td>
+              <td>${user.nickname || '—'}<br><small>${user.email || '—'}</small></td>
+              <td>
+                <select data-user-role="${user.id}">
+                  <option value="user" ${String(user.role).toLowerCase() === 'user' ? 'selected' : ''}>User</option>
+                  <option value="media" ${String(user.role).toLowerCase() === 'media' ? 'selected' : ''}>Media</option>
+                  <option value="admin" ${String(user.role).toLowerCase() === 'admin' ? 'selected' : ''}>Admin</option>
+                </select>
+              </td>
+              <td class="${banned ? 'status-used' : 'status-new'}">${banned ? 'yes' : 'no'}</td>
+              <td>${formatDate(user.subscription_until)}</td>
+              <td class="mono">${user.hwid || '—'}</td>
+              <td>
+                <button class="btn small ${banned ? '' : 'ghost'}" type="button" data-ban-user="${user.id}" data-banned="${banned ? 'no' : 'yes'}">
+                  ${banned ? 'Разбанить' : 'Забанить'}
+                </button>
+                <button class="btn small ghost" type="button" data-save-role="${user.id}">Сохранить роль</button>
+                <button class="btn small ghost" type="button" data-reset-hwid="${user.id}">Сброс HWID</button>
+                <button class="btn small ghost" type="button" data-sub-days="${user.id}" data-days="3">+3д</button>
+                <button class="btn small ghost" type="button" data-sub-days="${user.id}" data-days="30">+30д</button>
+                <button class="btn small ghost" type="button" data-sub-forever="${user.id}">∞</button>
+                <button class="btn small ghost" type="button" data-sub-none="${user.id}">Снять</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } catch (error) {
+        usersTable.innerHTML = `<tr><td colspan="7">${error.message || 'Ошибка загрузки пользователей'}</td></tr>`;
+      }
+    }
+
+    async function updateAdminUser(userId, payload) {
+      try {
+        await api(`/api/admin/users/${userId}/update`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        await loadAdminUsers();
+      } catch (error) {
+        alert(error.message || 'Не удалось обновить пользователя');
+      }
+    }
+
+    async function updateAdminUserRole(userId, role) {
+      const cleanRole = String(role || '').trim().toLowerCase();
+      if (!['user', 'media', 'admin'].includes(cleanRole)) {
+        alert('Некорректная роль');
+        return;
+      }
+
+      try {
+        const result = await api(`/api/admin/users/${userId}/role`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: cleanRole })
+        });
+
+        if (currentUser && Number(currentUser.id) === Number(userId)) {
+          setUser(result.user);
+        }
+
+        await loadAdminUsers();
+        markAdminSectionDirty('adminAuditBody');
+        const auditBody = document.getElementById('adminAuditBody');
+        if (!auditBody?.hidden) await loadAdminSection('adminAuditBody', true);
+      } catch (error) {
+        alert(error.message || 'Не удалось изменить роль пользователя');
+      }
+    }
+
+    async function setUserBan(userId, banned) {
+      try {
+        await api(`/api/admin/users/${userId}/ban`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ banned })
+        });
+        await loadAdminUsers();
+      } catch (error) {
+        alert(error.message || 'Не удалось изменить бан');
+      }
+    }
+
+
+    async function loadAdminAudit() {
+      try {
+        const result = await api('/api/admin/audit');
+        const logs = result.logs || [];
+        if (!logs.length) {
+          auditTable.innerHTML = '<tr><td colspan="6">Действий пока нет</td></tr>';
+          return;
+        }
+        auditTable.innerHTML = logs.map((log) => {
+          const admin = `${log.admin_nickname || '—'}<br><small>${log.admin_email || '—'}</small>`;
+          const details = typeof log.details === 'string' ? log.details : JSON.stringify(log.details || {});
+          return `
+            <tr>
+              <td>${admin}</td>
+              <td>${log.action || '—'}</td>
+              <td>${log.target_type || '—'} ${log.target_id || ''}</td>
+              <td class="mono">${details.length > 180 ? details.slice(0, 180) + '...' : details}</td>
+              <td class="mono">${log.ip || '—'}</td>
+              <td>${formatDateTime(log.created_at)}</td>
+            </tr>
+          `;
+        }).join('');
+      } catch (error) {
+        auditTable.innerHTML = `<tr><td colspan="6">${error.message || 'Ошибка загрузки журнала'}</td></tr>`;
+      }
+    }
+
+    async function downloadLoaderFromSite() {
+      const buttons = [downloadLoaderBtn, heroDownloadLoaderBtn].filter(Boolean);
+      buttons.forEach((button) => {
+        button.disabled = true;
+        button.textContent = 'Скачиваем...';
+      });
+      if (downloadMessage) downloadMessage.style.display = 'none';
+
+      try {
+        const response = await fetch('/api/site/download-loader', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (!response.ok) {
+          const text = await response.text();
+          let result = {};
+          try { result = text ? JSON.parse(text) : {}; } catch {}
+          throw new Error(result.error || 'Не удалось скачать лоадер. Для скачивания нужна активная подписка.');
+        }
+
+        const blob = await response.blob();
+        const disposition = response.headers.get('Content-Disposition') || '';
+        const match = disposition.match(/filename="?([^";]+)"?/i);
+        const fileName = match ? match[1] : 'NytheraLoader.exe';
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+        if (downloadMessage) showMessage(downloadMessage, 'Лоадер скачан. Обновления лоадера и клиента проверяются через лоадер после авторизации и активной подписки.');
+      } catch (error) {
+        if (downloadMessage) showMessage(downloadMessage, error.message || 'Ошибка скачивания лоадера', true);
+      } finally {
+        buttons.forEach((button) => {
+          button.disabled = false;
+          button.textContent = 'Скачать лоадер';
+        });
+      }
+    }
+
+    adminUserSearchBtn?.addEventListener('click', () => loadAdminSection('adminUsersBody', true));
+    adminUserSearch?.addEventListener('keydown', (event) => { if (event.key === 'Enter') loadAdminSection('adminUsersBody', true); });
+    let adminUserSearchTimer;
+    adminUserSearch?.addEventListener('input', () => {
+      clearTimeout(adminUserSearchTimer);
+      adminUserSearchTimer = setTimeout(() => {
+        const usersBody = document.getElementById('adminUsersBody');
+        if (!usersBody?.hidden) loadAdminSection('adminUsersBody', true);
+      }, 450);
+    });
+    [adminUserRoleFilter, adminUserBanFilter, adminUserSubscriptionFilter].forEach((select) => select?.addEventListener('change', () => loadAdminSection('adminUsersBody', true)));
+
+    downloadLoaderBtn?.addEventListener('click', downloadLoaderFromSite);
+    heroDownloadLoaderBtn?.addEventListener('click', downloadLoaderFromSite);
+
+    document.querySelectorAll('[data-media-duration]').forEach((button) => {
+      button.addEventListener('click', () => requestMediaKey(button.dataset.mediaDuration));
+    });
+
+    document.addEventListener('change', (event) => {
+      const roleSelect = event.target.closest('[data-user-role]');
+      if (roleSelect) {
+        const userId = roleSelect.dataset.userRole;
+        const role = roleSelect.value || 'user';
+
+        if (confirm(`Сохранить новую роль: ${role}?`)) {
+          updateAdminUserRole(userId, role);
+        } else {
+          loadAdminUsers();
+        }
+      }
+    });
+
+    document.addEventListener('click', (event) => {
+      const approveButton = event.target.closest('[data-approve-key]');
+      if (approveButton) {
+        approveMediaKey(approveButton.dataset.approveKey);
+        return;
+      }
+
+      const resolveButton = event.target.closest('[data-resolve-flag]');
+      if (resolveButton) {
+        resolveSecurityFlag(resolveButton.dataset.resolveFlag);
+        return;
+      }
+
+      const banButton = event.target.closest('[data-ban-user]');
+      if (banButton) {
+        const shouldBan = banButton.dataset.banned === 'yes';
+        const text = shouldBan
+          ? 'Забанить пользователя? Его активная подписка будет снята.'
+          : 'Разбанить пользователя?';
+        if (confirm(text)) setUserBan(banButton.dataset.banUser, shouldBan);
+        return;
+      }
+
+      const saveRoleButton = event.target.closest('[data-save-role]');
+      if (saveRoleButton) {
+        const userId = saveRoleButton.dataset.saveRole;
+        const select = document.querySelector(`[data-user-role="${userId}"]`);
+        const role = select?.value || 'user';
+
+        if (confirm(`Изменить роль пользователя на ${role}?`)) {
+          updateAdminUserRole(userId, role);
+        }
+        return;
+      }
+
+      const resetHwidButton = event.target.closest('[data-reset-hwid]');
+      if (resetHwidButton) {
+        if (confirm('Сбросить HWID пользователя?')) updateAdminUser(resetHwidButton.dataset.resetHwid, { resetHwid: true });
+        return;
+      }
+
+      const subDaysButton = event.target.closest('[data-sub-days]');
+      if (subDaysButton) {
+        const days = Number(subDaysButton.dataset.days);
+        if (confirm(`Выдать подписку на ${days} дней от текущего момента?`)) updateAdminUser(subDaysButton.dataset.subDays, { subscriptionMode: 'days', subscriptionDays: days });
+        return;
+      }
+
+      const subForeverButton = event.target.closest('[data-sub-forever]');
+      if (subForeverButton) {
+        if (confirm('Выдать подписку навсегда?')) updateAdminUser(subForeverButton.dataset.subForever, { subscriptionMode: 'forever' });
+        return;
+      }
+
+      const subNoneButton = event.target.closest('[data-sub-none]');
+      if (subNoneButton) {
+        if (confirm('Снять подписку у пользователя?')) updateAdminUser(subNoneButton.dataset.subNone, { subscriptionMode: 'none' });
+        return;
+      }
+
+      const updateActiveButton = event.target.closest('[data-update-active]');
+      if (updateActiveButton) {
+        const active = updateActiveButton.dataset.active === 'true';
+        if (confirm(active ? 'Включить это обновление?' : 'Отключить это обновление?')) setUpdateActive(updateActiveButton.dataset.updateActive, active);
+        return;
+      }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+    loadMe();
+  </script>
+</body>
+</html>
